@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.spring.blog.repository.BlogRepository">
+
+    <!-- 리턴타입이 entity등의 클래스로 구성된 경우 패키지명부터 적어준다 -->
+    <select id="findAll" resultType="com.spring.blog.entity.Blog">
+        SELECT * FROM blog
+    </select>
+
+
+
+    <!-- 테스트를 위한 쿼리문들 -->
+    <update id="createBlogTable">
+        CREATE TABLE IF NOT EXISTS blog(
+            blog_id int auto_increment primary key,
+            writer varchar(16) not null,
+            blog_title varchar(200) not null,
+            blog_content varchar(4000) not null,
+            published_at datetime default now(),
+            updated_at datetime default now(),
+            blog_count int default 0
+        )
+    </update>
+    <update id="dropBlogTable">
+        DROP TABLE blog
+    </update>
+
+    <insert id="insertTestData">
+        INSERT INTO blog VALUES
+        (null, '1번유저', '1번제목', '1번본문', now(), now(), null),
+        (null, '2번유저', '2번제목', '2번본문', now(), now(), null),
+        (null, '3번유저', '3번제목', '3번본문', now(), now(), null)
+    </insert>
+</mapper>
