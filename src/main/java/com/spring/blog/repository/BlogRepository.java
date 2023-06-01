@@ -24,6 +24,10 @@ public interface BlogRepository {
     // n개의 복수의 Blog 엔터티를 받아와야 하므로 List로 감쌈
     List<Blog> findAll();
 
+    // 단일행 조회 기능 findById()
+    // blogId를 요구합니다.
+
+
 
 
 

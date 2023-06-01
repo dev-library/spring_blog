@@ -25,7 +25,8 @@ public class BlogRepositoryTest {
 
     @Test
     public void findAllTest(){
-        //given 없음
+        //given (사람기준)2번째요소 조회를 위한 fixture 선언
+        int blogId = 1; // 자바 자료구조 인덱스는 0번부터
 
         // when DB에 있는 모든 데이터를 자바 엔터티로 역직렬화
         List<Blog> blogList = blogRepository.findAll();
@@ -33,6 +34,9 @@ public class BlogRepositoryTest {
 
         // then 더미데이터가 3개이므로 3개일것이라 단언
         assertEquals(3, blogList.size());
+        // (사람기준)2번째 객체의 ID번호는 2번일것이다.
+        assertEquals(2, blogList.get(blogId).getBlogId());
+
     }
 
 

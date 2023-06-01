@@ -6,7 +6,16 @@
 
     <!-- 리턴타입이 entity등의 클래스로 구성된 경우 패키지명부터 적어준다 -->
     <select id="findAll" resultType="com.spring.blog.entity.Blog">
-        SELECT * FROM blog
+        SELECT
+            blog_id as blogId,
+            writer,
+            blog_title as blogTitle,
+            blog_content as blogContent,
+            published_at as publishedAt,
+            updated_at as updatedAt,
+            blog_count as blogCount
+        FROM
+            blog
     </select>
 
 
