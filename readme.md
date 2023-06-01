@@ -103,3 +103,45 @@ public class 테스트코드작성을위한 클래스명 {
 ```
 
 형식으로 작성해주세요.
+
+---
+## 테스트 코드 고도화 1(트랜잭션 활용)
+
+일반적으로 배포를 위한 빌드는 테스트코드를 모두 통과해야만 완료되게 설정합니다.
+
+당연히 모든 기능이 돌아간다는 전제가 되어야 배포를 할 수 있기 때문입니다.
+
+그러나 불행하게도 많은 테스트를 진행하는데 매번 테이블을 생성했다 지웠다 하는것은 비효율적입니다.
+
+따라서 트랜잭션을 걸고, 메서드단위로 커밋을 하지 않는 방식으로
+
+격리성을 지키면서도 DB를 매 단위마다 초기화할 수 있습니다.
+
+방법은 아래와 같이 @Test 가 붙은 테스트 메서드에 추가로 @Transactional 을 붙이면 됩니다.
+```
+@Test
+@Transactional
+public void 테스트메서드(){
+	...
+}
+```
+
+---
+## 테스트 코드 고도화 2(병렬처리)
+
+
+src/test/resources/junit-platform.properties
+```
+junit.jupiter.execution.parallel.enabled=true
+junit.jupiter.execution.parallel.mode.classes.default=concurrent
+junit.jupiter.execution.parallel.mode.default=concurrent
+junit.jupiter.execution.parallel.config.strategy=dynamic
+junit.jupiter.execution.parallel.config.dynamic.factor=1
+```
+- enabled : 병렬실행여부(true/false)
+- mode.classes.default : 클래스 단위 병렬수행여부(same_thread / concurrent)
+- mode.default : 함수 단위 동일 스레드(same_thread / concurrent)
+- config.stratergy : 병렬수행 및 스레드 풀 전략(dynamic<자동 최적화 계산> / fixed<임의의 값 지정>)
+- config.dynamic.factor : dynamic 전략 채택시 곱할 인자 수(1은 cpu의 코어 숫자만큼 채택)
+
+위 파일을 생성하고 설정을 위와같이 하고 테스트 코드를 돌리면 동시에 돌아가는것을 볼 수 있습니다.
