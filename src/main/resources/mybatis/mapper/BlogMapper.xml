@@ -18,6 +18,50 @@
             blog
     </select>
 
+    <!-- 위 select 태그를 참조해 방금 만든 findByID를 연결해주시고, 리턴자료도 매칭해주세요. -->
+    <select id="findById" resultType="com.spring.blog.entity.Blog">
+        SELECT
+            blog_id as blogId,
+            writer,
+            blog_title as blogTitle,
+            blog_content as blogContent,
+            published_at as publishedAt,
+            updated_at as updatedAt,
+            blog_count as blogCount
+        FROM
+            blog
+        WHERE
+            blog_id = #{blogId}
+    </select>
+
+    <!-- insert 태그를 이용해서 사전 세팅만 해주세요 -->
+    <insert id="save" parameterType="com.spring.blog.entity.Blog">
+        INSERT INTO
+            blog (writer, blog_title, blog_content)
+        VALUES
+            (#{writer}, #{blogTitle}, #{blogContent})
+    </insert>
+
+    <!-- delete 태그를 이용해서 deleteById 메서드를 구현해주세요 -->
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM
+                blog
+            WHERE
+                blog_id = #{blogId}
+    </delete>
+
+    <!-- 수정로직을 아래에 쿼리문까지 작성해주세요,
+        바꿔줘야 하는 항목은 제목, 본문, 업데이트시각 -->
+    <update id="update" parameterType="com.spring.blog.entity.Blog">
+        UPDATE
+            blog
+        SET
+            blog_title = #{blogTitle},
+            blog_content = #{blogContent},
+            updated_at = now()
+        WHERE
+        blog_id = #{blogId}o
+    </update>
 
 
     <!-- 테스트를 위한 쿼리문들 -->
