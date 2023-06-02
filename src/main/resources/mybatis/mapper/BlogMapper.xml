@@ -60,7 +60,7 @@
             blog_content = #{blogContent},
             updated_at = now()
         WHERE
-        blog_id = #{blogId}o
+        blog_id = #{blogId}
     </update>
 
 

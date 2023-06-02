@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 
 @SpringBootTest
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)// DROP TABLE시 필요한 어노테이션
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)// 테스트 코드 주기가 메서드 단위임(기본값)
 public class BlogRepositoryTest {
 
     @Autowired
@@ -102,12 +102,43 @@ public class BlogRepositoryTest {
         assertNull(blogRepository.findById(blogId));
     }
 
+    @Test
+    @DisplayName("2번글의 제목을 '수정한제목' 으로, 본문도 '수정한 본문' 으로 수정 후 확인")
+    public void updateTest(){
+        // given : 2번글 원본 데이터를 얻어온 다음, blogTitle, blogContent내용만 수정해서 다시 update()
+        // Blog객체를 생성해서 blogId와 blogTitle, blogContent내용만 setter로 주입해서 다시 update()
+
+        // 픽스처 생성
+        long blogId = 2;
+        String blogTitle = "수정한제목";
+        String blogContent = "수정한본문";
+
+        // 1번 given 실행
+        //Blog blog = blogRepository.findById(blogId);
+
+        //blog.setBlogTitle(blogTitle);
+        //blog.setBlogContent(blogContent);
+
+        // 2번 given 실행
+        Blog blog = Blog.builder()  // 빌더패턴 시작
+                .blogId(blogId)
+                .blogTitle(blogTitle)
+                .blogContent(blogContent)
+                .build(); // 빌더패턴 끝
+
+
+
+        // when : 수정 내역을 디비에 반영해주기
+        blogRepository.update(blog);
+
+        // then : 바뀐 2번 글의 타이틀은 "수정한제목", 본문은 "수정한본문" 으로 변환되었을것이다.
+        assertEquals(blogTitle, blogRepository.findById(blogId).getBlogTitle());
+        assertEquals(blogContent, blogRepository.findById(blogId).getBlogContent());
+    }
 
     @AfterEach // 각 단위테스트 끝난 후에 실행할 구문을 작성
     public void dropBlogTable(){
         blogRepository.dropBlogTable();// blog 테이블 지우기
     }
-
-
 
 }
