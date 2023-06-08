@@ -113,9 +113,10 @@ public class BlogController {
     @RequestMapping(value="/update", method=RequestMethod.POST)
     public String update(Blog blog){
         // 받아온 blog엔터티로 글 수정
-
+        blogService.update(blog);
         // 리다이렉트는 가능하시면 해당 글번호의 디테일페이지로 넘어가게 해 주시고
+        return "redirect:/blog/detail/" + blog.getBlogId();
         // 그게 어려우시면 list로 넘어가게 해주세요.
-
+        //return "redirect:/blog/list";
     }
 }
