@@ -30,4 +30,28 @@
             reply_id = #{replyId}
     </select>
 
+    <delete id="deleteByReplyId">
+        DELETE FROM
+            reply
+        WHERE
+            reply_id = #{replyId}
+    </delete>
+
+    <insert id="save" parameterType="com.spring.blog.dto.ReplyInsertDTO">
+        INSERT INTO
+            REPLY (blog_id, reply_writer, reply_content)
+        VALUES
+            (#{blogId}, #{replyWriter}, #{replyContent})
+    </insert>
+
+    <update id="update" parameterType="com.spring.blog.dto.ReplyUpdateDTO">
+        UPDATE REPLY
+            SET
+                reply_writer = #{replyWriter},
+                reply_content = #{replyContent},
+                updated_at = now()
+            WHERE
+                reply_id = #{replyId}
+    </update>
+
 </mapper>
