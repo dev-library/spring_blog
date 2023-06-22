@@ -28,5 +28,8 @@ public interface ReplyRepository {
     // updatedAt 역시 now()로 바꿔줍니다.
     void update(ReplyUpdateDTO replyUpdateDTO);
 
+    // blogId를 받아서 특정 글과 연계된 댓글 전체를 삭제하는 메서드를 정의만 해주세요.
+    void deleteByBlogId(long blogId);
+
 
 }

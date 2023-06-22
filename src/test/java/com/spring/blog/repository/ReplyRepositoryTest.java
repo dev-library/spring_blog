@@ -119,6 +119,20 @@ public class ReplyRepositoryTest {
 
     }
 
+    @Test
+    @Transactional
+    @DisplayName("blogId가 2인 글을 삭제하면, 삭제한 글의 전체 댓글 조회시 자료 길이는 0일것이다.")
+    public void deleteByBlogIdTest(){
+        // given : fixture 작성
+        long blogId = 2;
+
+        // when : 삭제 수행
+        replyRepository.deleteByBlogId(blogId);
+
+        // then : blogId번 글 전체 댓글을 얻어와서 길이가 0인지 확인
+        List<ReplyFindByIdDTO> resultList = replyRepository.findAllByBlogId(blogId);
+        assertEquals(0, resultList.size());
+    }
 
 
 }

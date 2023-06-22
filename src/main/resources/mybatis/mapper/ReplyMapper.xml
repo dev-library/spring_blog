@@ -54,4 +54,11 @@
                 reply_id = #{replyId}
     </update>
 
+    <delete id="deleteByBlogId" parameterType="long">
+        DELETE FROM
+            reply
+            WHERE
+            blog_id = #{blogId}
+    </delete>
+
 </mapper>
