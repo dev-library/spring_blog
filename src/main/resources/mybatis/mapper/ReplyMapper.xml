@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.spring.blog.repository.ReplyRepository">
 
-    <select id="findAllByBlogId" resultType="com.spring.blog.dto.ReplyFindByIdDTO" parameterType="long">
+    <select id="findAllByBlogId" resultType="com.spring.blog.dto.ReplyResponseDTO" parameterType="long">
         SELECT
             reply_id as replyId,
             reply_writer as replyWriter,
@@ -17,7 +17,7 @@
             blog_id = #{blogId}
     </select>
 
-    <select id="findByReplyId" resultType="com.spring.blog.dto.ReplyFindByIdDTO" parameterType="long">
+    <select id="findByReplyId" resultType="com.spring.blog.dto.ReplyResponseDTO" parameterType="long">
         SELECT
             reply_id as replyId,
             reply_writer as replyWriter,
@@ -37,14 +37,14 @@
             reply_id = #{replyId}
     </delete>
 
-    <insert id="save" parameterType="com.spring.blog.dto.ReplyInsertDTO">
+    <insert id="save" parameterType="com.spring.blog.dto.ReplyCreateRequestDTO">
         INSERT INTO
             REPLY (blog_id, reply_writer, reply_content)
         VALUES
             (#{blogId}, #{replyWriter}, #{replyContent})
     </insert>
 
-    <update id="update" parameterType="com.spring.blog.dto.ReplyUpdateDTO">
+    <update id="update" parameterType="com.spring.blog.dto.ReplyUpdateRequestDTO">
         UPDATE REPLY
             SET
                 reply_writer = #{replyWriter},

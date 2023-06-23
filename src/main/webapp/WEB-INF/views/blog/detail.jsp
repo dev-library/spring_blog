@@ -14,6 +14,29 @@
 </head>
 <body>
     <div class="container">
+        <!-- 모달 자리 -->
+        <div class="modal fade" id="replyUpdateModal" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">댓글 수정하기</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  작성자 : <input type="text" class="form-control" id="modalReplyWriter"><br>
+                  댓글내용 : <input type="text" class="form-control" id="modalReplyContent">
+                  <input type="hidden" id="modalReplyId" value="">
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                  <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="replyUpdateBtn">수정하기</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
         <div class="row first-row">
             <div class="col-1">
                 글번호
@@ -126,10 +149,16 @@
                     // .map()을 이용한 간결한 반복문 처리
                     replies.map((reply, i) => { // 첫 파라미터 : 반복대상자료, 두번째 파라미터 : 순번
                         str += 
-                            `<h3>\${i+1}번째 댓글 || 글쓴이: \${reply.replyWriter}, 
-                            댓글내용: \${reply.replyContent}
+                            `<h3>\${i+1}번째 댓글 || 글쓴이: 
+                                <span id="replyWriter\${reply.replyId}">\${reply.replyWriter}</span>, 
+                            댓글내용: 
+                                <span id="replyContent\${reply.replyId}">\${reply.replyContent}</span>
                                 <span class="deleteReplyBtn" data-replyId="\${reply.replyId}">
                                     [삭제]
+                                </span>
+                                <span class="updateReplyBtn" data-replyId="\${reply.replyId}" 
+                                        data-bs-toggle="modal" data-bs-target="#replyUpdateModal">
+                                    [수정]
                                 </span>
                             </h3>`;
                     });
@@ -192,34 +221,116 @@
         $replies.onclick = (e) => {
             // 클릭한 요소가 #replies의 자손태그인 .deleteReplyBtn 인지 검사하기
             // 이벤트객체.target.matches는 클릭한 요소가 어떤 태그인지 검사해줍니다.
-            if(!e.target.matches('#replies .deleteReplyBtn')){
-                return;
+
+            if(!e.target.matches('#replies .deleteReplyBtn')// 삭제버튼도 아니고
+                && !e.target.matches('#replies .updateReplyBtn')){ // 수정버튼도 아니고
+                return; // 위 두 조건이 모두 충족되면 기능 실행 X
+            }else if(e.target.matches('#replies .deleteReplyBtn')){
+                // 클릭된 요소가 삭제버튼이라면
+                deleteReply();// 아래에 정의해둔 deleteReply() 호출해서 클릭된 요소 삭제
+            } else if(e.target.matches('#replies .updateReplyBtn')){
+                // 클릭된 요소가 수정버튼이면
+                openUpdateReplyModal();// 아래에 정의해둔 함수를 호출해서 모달창 오픈
             }
-            // 클릭이벤트 객체 e의 target 속성의 dataset 속성 내부에 댓글번호가 있으므로 확인
-            console.log(e.target.dataset['replyid']);
+        
 
-            const replyId = e.target.dataset['replyid'];
-            //const replyId = e.target.dataset.replyid; 위와 동일
+            // 수정버튼을 누르면 실행될 함수
+            function openUpdateReplyModal(){
+                // 클릭이벤트 객체 e의 target 속성의 dataset 속성 내부에 댓글번호가 있으므로 확인
+                console.log(e.target.dataset['replyid']);
 
-            if(confirm("정말로 삭제하시겠어요?")){ // 예, 아니오로 답할수있는 경고창을 띄웁니다.
-                // 예를 선택하면 true, 아니오를 선택하면 false입니다.
+                const replyId = e.target.dataset['replyid'];
+                //const replyId = e.target.dataset.replyid; 위와 동일
 
-                // 위 정보를 토대로 url 세팅 후 비동기 요청으로 삭제를 처리하고 댓글을 갱신해주세요.
-                // 상대주소 /reply/\${replyId}/
-                let url = `http://localhost:8080/reply/\${replyId}/`; 
+                // hidden태그에 현재 내가 클릭한 replyId값을 value 프로퍼티에 저장해주기
+                const $modalReplyId = document.querySelector("#modalReplyId");
+                $modalReplyId.value = replyId;
+                
+                // 가져올 id요소를 문자로 먼저 저장합니다.
+                let replyWriterId = `#replyWriter\${replyId}`;
+                let replyContentId = `#replyContent\${replyId}`;
+                
+                // 위에서 추출한 id번호를 이용해 document.querySelector 를 통해 
+                //요소를 가져온 다음 text값을 얻어서 모달창의 폼 양식 내부에 넣어줍니다.
+                // 위에 부여한 id를 이용해 span태그를 가지고 오는 코드
+                const $replyWriter = document.querySelector(replyWriterId);
+                const $replyContent = document.querySelector(replyContentId);
 
-                fetch(url, { method:'delete' })
-                .then(() => {
-                    // 요청 넣은 후 실행할 코드를 여기에 적습니다.
-                    alert('해당 댓글을 삭제했습니다.');
-                    // 삭제되어 댓글 구성이 변경되었으므로 갱신
-                    getAllReplies(blogId);
-                });
+                // 태그는 제거하고 내부 문자만 가지고 오도록 처리하는 코드
+                let replyWriterOriginalValue = $replyWriter.innerText;
+                let replyContentOriginalValue = $replyContent.innerText;
+
+                // modal창 내부의 ReplyWriter, ReplyContent를 적을 수 있는 폼을 가져옵니다.
+                const $modalReplyWriter = document.getElementById("modalReplyWriter");
+                const $modalReplyContent = document.getElementById("modalReplyContent");
+
+                // 폼.value = InnerText 형식으로 추출한 값을 대입해줍니다.
+                $modalReplyWriter.value = replyWriterOriginalValue;
+                $modalReplyContent.value =  replyContentOriginalValue;
+            }
+
+            // 삭제버튼을 누르면 실행될 함수.
+            function deleteReply(){
+                // 클릭이벤트 객체 e의 target 속성의 dataset 속성 내부에 댓글번호가 있으므로 확인
+                console.log(e.target.dataset['replyid']);
+
+                const replyId = e.target.dataset['replyid'];
+                //const replyId = e.target.dataset.replyid; 위와 동일
+
+                if(confirm("정말로 삭제하시겠어요?")){ // 예, 아니오로 답할수있는 경고창을 띄웁니다.
+                    // 예를 선택하면 true, 아니오를 선택하면 false입니다.
+
+                    // 위 정보를 토대로 url 세팅 후 비동기 요청으로 삭제를 처리하고 댓글을 갱신해주세요.
+                    // 상대주소 /reply/\${replyId}/
+                    let url = `http://localhost:8080/reply/\${replyId}`;
+
+                    fetch(url, { method:'delete' })
+                    .then(() => {
+                        // 요청 넣은 후 실행할 코드를 여기에 적습니다.
+                        alert('해당 댓글을 삭제했습니다.');
+                        // 삭제되어 댓글 구성이 변경되었으므로 갱신
+                        getAllReplies(blogId);
+                    });
+                }
             }
         }
 
+        // 수정창이 열렸고, 댓글 수정 내역을 모두 폼에 입력한 뒤 수정하기 버튼을 누를경우
+        // 비동기 요청으로 수정 요청이 들어가도록 처리
+        $replyUpdateBtn = document.querySelector('#replyUpdateBtn');
+
+        $replyUpdateBtn.onclick = (e) => {
+            // 히든으로 숨겨놓은 태그를 가져온 다음
+            const $modalReplyId = document.querySelector("#modalReplyId");
+            // 변수에 해당 글 번호를 저장한다음
+            const replyId = $modalReplyId.value;
+            // url에 포함시킴
+            const url = `http://localhost:8080/reply/\${replyId}`;
+
+            
+            // 그 후 비동기 요청 넣기
+            fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    replyWriter : document.querySelector("#modalReplyWriter").value,
+                    replyContent : document.querySelector("#modalReplyContent").value,
+                }),
+            }).then(() => {
+                // 폼 소거
+                document.getElementById("replyWriter").value = "";
+                document.getElementById("replyContent").value = "";
+                getAllReplies(blogId); // 목록 갱신
+            });
+        }
+
+
+
 
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 </body>
 </html>
 

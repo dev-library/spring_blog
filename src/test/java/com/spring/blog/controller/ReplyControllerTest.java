@@ -1,8 +1,9 @@
 package com.spring.blog.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spring.blog.dto.ReplyFindByIdDTO;
-import com.spring.blog.dto.ReplyInsertDTO;
+import com.spring.blog.dto.ReplyCreateRequestDTO;
+import com.spring.blog.dto.ReplyResponseDTO;
+import com.spring.blog.dto.ReplyUpdateRequestDTO;
 import com.spring.blog.repository.ReplyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -105,11 +106,11 @@ class ReplyControllerTest {
     @Transactional
     @DisplayName("blogId 1번에 replyWriter는 또사라짐 replyContent 가기싫다를 넣고 등록 후 전체댓글 조회시 픽스처 일치")
     public void insertReplyTest() throws Exception {
-        // given : 픽스처 생성 및  ReplyInsertDTO 객체 생성 후 픽스처주입 + json으로 데이터 직렬화
+        // given : 픽스처 생성 및  ReplyCreateRequestDTO 객체 생성 후 픽스처주입 + json으로 데이터 직렬화
         long blogId = 1;
         String replyWriter = "또사라짐";
         String replyContent = "가기싫다";
-        ReplyInsertDTO replyInsertDTO = new ReplyInsertDTO(blogId, replyWriter, replyContent);
+        ReplyCreateRequestDTO replyInsertDTO = new ReplyCreateRequestDTO(blogId, replyWriter, replyContent);
         String url = "/reply";
         String url2 = "/reply/1/all";
 
@@ -148,15 +149,42 @@ class ReplyControllerTest {
 
 
         // then : repository를 이용해 전체 데이터를 가져온 후, 개수 비교 및 삭제한 3번댓글은 null이 리턴되는지 확인
-        List<ReplyFindByIdDTO> resultList = replyRepository.findAllByBlogId(blogId);
+        List<ReplyResponseDTO> resultList = replyRepository.findAllByBlogId(blogId);
         assertEquals(3, resultList.size());
-        ReplyFindByIdDTO result = replyRepository.findByReplyId(replyId);
+        ReplyResponseDTO result = replyRepository.findByReplyId(replyId);
         assertNull(result);
     }
 
+    @Test
+    @Transactional
+    @DisplayName("댓글번호 4번의 replyWriter를 냥냥이로, replyContent를 왈왈 로 바꾼뒤 조회시 픽스처 일치")
+    public void updateReplyTest() throws Exception{
+        // given : 픽스처 생성 및 ReplyUpdateRequestDTO 객체 생성 후 픽스처 주입 + json으로 데이터 직렬화
+        String replyWriter = "냥냥이";
+        String replyContent = "왈왈";
+        ReplyUpdateRequestDTO replyUpdateRequestDTO = ReplyUpdateRequestDTO.builder()
+                                                                            .replyWriter(replyWriter)
+                                                                            .replyContent(replyContent)
+                                                                            .build();
 
+        String url = "/reply/4"; // 4번댓글에 대한 수정 요청 넣기
 
+        // 데이터 json으로 직렬화
+        final String requestBody = objectMapper.writeValueAsString(replyUpdateRequestDTO);
 
+        // when : 직렬화된 데이터를 이용해 patch방식으로 세팅된 요청 주소에 요청 넣기
+        mockMvc.perform(patch(url)
+                .contentType(MediaType.APPLICATION_JSON)// 보내는 데이터는 JSON
+                .content(requestBody));// 직렬화된 데이터 전송
 
+        // then : 위에서 수정한 4번 댓글에 대한 정보를 가져와서 픽스처와 비교
+        final ResultActions result = mockMvc.perform(get(url)
+                                                    .accept(MediaType.APPLICATION_JSON));
 
+        // 얻어온 4번 코드의 요청 결과는 200이고, replyWriter, replyContent는 픽스처와 일치한다.
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.replyWriter").value(replyWriter))
+                .andExpect(jsonPath("$.replyContent").value(replyContent));
+    }
 }
