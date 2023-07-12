@@ -3,6 +3,7 @@ package com.spring.blog.controller;
 import com.spring.blog.dto.ReplyResponseDTO;
 import com.spring.blog.dto.ReplyCreateRequestDTO;
 import com.spring.blog.dto.ReplyUpdateRequestDTO;
+import com.spring.blog.entity.Reply;
 import com.spring.blog.exception.NotFoundReplyByReplyIdException;
 import com.spring.blog.service.ReplyService;
 import org.apache.coyote.Response;
@@ -32,10 +33,10 @@ public class ReplyController {
     @RequestMapping(value = "/{blogId}/all", method = RequestMethod.GET)
     // rest서버는 응답시 응답코드와 응답객체를 넘기기 때문에 ResponseEntity<자료형>
     // 을 리턴합니다.
-    public ResponseEntity<List<ReplyResponseDTO>> findAllReplies(
+    public ResponseEntity<List<Reply>> findAllReplies(
                                                        @PathVariable long blogId){
         // 서비스에서 리플 목록을 들고옵니다.
-        List<ReplyResponseDTO> replies = replyService.findAllByBlogId(blogId);
+        List<Reply> replies = replyService.findAllByBlogId(blogId);
 
         return ResponseEntity
                 .ok()//replies);   // 200코드, 상태 코드와 body에 전송할 데이터를 같이 작성할수도 있음.
@@ -48,8 +49,8 @@ public class ReplyController {
     public ResponseEntity<?> findByReplyId(@PathVariable long replyId){
 
         // 서비스에서 특정 번호 리플을 가져옵니다.
-        ReplyResponseDTO replyResponseDTO = replyService.findByReplyId(replyId);
-        if(replyResponseDTO == null) {
+        Reply reply = replyService.findByReplyId(replyId);
+        if(reply == null) {
             try {
                 throw new NotFoundReplyByReplyIdException("없는 리플 번호를 조회했습니다");
             } catch (NotFoundReplyByReplyIdException e) {
@@ -59,15 +60,15 @@ public class ReplyController {
         }
         //return new ResponseEntity<ReplyResponseDTO>(replyFindByIdDTO, HttpStatus.OK);
         return ResponseEntity
-                .ok(replyResponseDTO);
+                .ok(reply);
     }
 
     // post방식으로 /reply 주소로 요청이 들어왔을때 실행되는 메서드 insertReply()를 작성해주세요.
     @RequestMapping(value = "", method = RequestMethod.POST)
                                 // Rest컨트롤러는 데이터를 json으로 주고받음.
                                 // 따라서 @RequestBody 를 이용해 json으로 들어온 데이터를 역직렬화 하도록 설정
-    public ResponseEntity<String> insertReply(@RequestBody ReplyCreateRequestDTO replyCreateRequestDTO) {
-        replyService.save(replyCreateRequestDTO);
+    public ResponseEntity<String> insertReply(@RequestBody Reply reply) {
+        replyService.save(reply);
         return ResponseEntity
                     .ok("댓글 등록이 잘 되었습니다.");
     }
@@ -84,12 +85,12 @@ public class ReplyController {
     // ReplyUpdateRequestDTO를 requestBody로 받아 요청처리를 하게 만들어주세요.
     @RequestMapping(value = "/{replyId}", method = {RequestMethod.PUT, RequestMethod.PATCH})
     public ResponseEntity<String> updateReply(@PathVariable long replyId,
-                                              @RequestBody ReplyUpdateRequestDTO replyUpdateRequestDTO){
+                                              @RequestBody Reply reply){
         // json 데이터에 replyId를 포함하는 대신 url에 포함시켰으므로 requestBody에 추가해줘야함.
-        System.out.println("replyId 주입 전 : " + replyUpdateRequestDTO);
-        replyUpdateRequestDTO.setReplyId(replyId);
-        System.out.println("replyId setter 주입 후 : " + replyUpdateRequestDTO);
-        replyService.update(replyUpdateRequestDTO);
+        System.out.println("replyId 주입 전 : " + reply);
+        reply.setReplyId(replyId);
+        System.out.println("replyId setter 주입 후 : " + reply);
+        replyService.update(reply);
 
         return ResponseEntity.ok("수정이 완료되었습니다.");
     }
