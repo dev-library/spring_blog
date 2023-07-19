@@ -6,12 +6,15 @@ import com.spring.blog.service.BlogService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import java.security.Principal;
 import java.util.List;
 
 @Controller // 컨트롤러 어노테이션은 1. 빈 등록 + 2. url 매핑 처리 기능을 함께 가지고 있으므로 다른 어노테이션과
@@ -67,7 +70,9 @@ public class BlogController {
     // 위 방식으로 글 번호를 입력받아, service를 이용해 해당 글 번호 요소만 얻어서
     // 뷰에 적재하는 코드를 아래쪽에 작성해주세요
     @RequestMapping("/detail/{blogId}")
-    public String detail(@PathVariable long blogId, Model model){
+    public String detail(@PathVariable long blogId, Model model, Principal principal){
+
+        model.addAttribute("username", principal.getName());
         Blog blog = blogService.findById(blogId);
 
         if(blog == null){
@@ -90,7 +95,12 @@ public class BlogController {
     // 대신 폼 페이지는 GET방식으로 접속했을때 연결해주고
     // 폼에서 작성완료한 내용을 POST방식으로 제출해 저장하도록 만들어줍니다.
     @RequestMapping(value = "/insert", method= RequestMethod.GET)
-    public String insert(){
+    public String insert(Model model, Principal principal){
+        // SecurityContext, Principal은 둘 다 인증정보를 가지고 있는 객체입니다.
+        // 둘 중 편한걸 사용해주시면 됩니다.
+
+                                    // principle.getName()은 현재 로그인 유저의 아이디를 리턴합니다.
+        model.addAttribute("username", principal.getName());
         // /WEB-INF/views/blog/blog-form.jsp
         return "blog/blog-form";
     }

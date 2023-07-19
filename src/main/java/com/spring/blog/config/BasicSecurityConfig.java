@@ -9,6 +9,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,6 +34,7 @@ public class BasicSecurityConfig { // 베이직 방식 인증을 사용하도록
                                             // 추후 설정할 정적자원 저장 경로에 보안을 풀었음.
                 .dispatcherTypeMatchers(DispatcherType.FORWARD);
                                             // MVC방식에서 뷰단 파일을 로딩하는것을 보안범위에서 해제.
+                                            // 이 설정을 하지 않으면, .jsp파일이 화면에 출력되지 않습니다.
 
     }
 
@@ -49,11 +51,12 @@ public class BasicSecurityConfig { // 베이직 방식 인증을 사용하도록
                 })
                 .formLogin(formLoginConfig -> {
                     formLoginConfig
-                            .loginPage("/login")
+                            .loginPage("/login") // 폼에서 날려준 정보를 토대로 로그인 처리를 해주는 주소(post)
                             .defaultSuccessUrl("/blog/list");
                 })
                 .logout(logoutConfig -> {
                     logoutConfig
+                            .logoutUrl("/logout") // 디폴트로 "/logout"으로 잡아주기 때문에 굳이 설정할필요없음
                             .logoutSuccessUrl("/login")
                             .invalidateHttpSession(true);
                 })

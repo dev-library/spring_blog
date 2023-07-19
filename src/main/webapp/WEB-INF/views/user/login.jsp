@@ -17,7 +17,7 @@
             <div class="col-3">
                 <input type="password" name="password" placeholder="비밀번호">
             </div>
-            <input type="submit" value="회원가입하기">
+            <input type="submit" value="로그인하기">
         </form>
     </div>
 </body>
