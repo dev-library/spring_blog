@@ -31,7 +31,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security:3.1.0'
 	testImplementation 'org.springframework.security:spring-security-test:6.1.0'
-
+	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	implementation 'javax.xml.bind:jaxb-api:2.3.1'
 
 }
 

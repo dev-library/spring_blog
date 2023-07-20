@@ -38,3 +38,4 @@ out/
 
 ### profiles ###
 application-db.properties
+application-jwt.properties
