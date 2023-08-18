@@ -3,6 +3,7 @@ package com.spring.blog.service;
 import com.spring.blog.entity.User;
 import com.spring.blog.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,14 +18,14 @@ public class UsersService {// UserService는 "인증" 만 담당하고, 나머�
 
     @Autowired
     public UsersService(UserRepository userRepository,
-                        BCryptPasswordEncoder bCryptPasswordEncoder){
+                        @Lazy BCryptPasswordEncoder bCryptPasswordEncoder){ // 지연 주입
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
     // 폼에서 날려준 정보를 디비에 적재하되, 비밀번호는 암호화(인코딩)을 진행한 구문을 인서트함.
     public void save(User user) {
-
+         //BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
          User newUser = User.builder()
                 .email(user.getEmail())
                 .loginId(user.getLoginId())
@@ -39,5 +40,23 @@ public class UsersService {// UserService는 "인증" 만 담당하고, 나머�
         return userRepository.findByLoginId(loginId);
     }
 
+    // 회원가입이 되었는지 안 되었는지 체킹하기 위해서 조회하는 구문 추가
+    public User findById(Long userId) {
+        return userRepository.findById(userId).get();
+    }
+
+    // 소셜로그인은 이메일 기반 로그인이 되므로 이메일로도 조회
+    public User findByEmail(String email) {
+        // 유저레포지토리에 쿼리메서드 형식으로 이메일 조회 추가.
+        return userRepository.findByEmail(email);
+    }
+
+
+
 
 }
+
+
+
+
+

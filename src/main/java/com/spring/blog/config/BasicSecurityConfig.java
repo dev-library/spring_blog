@@ -1,8 +1,14 @@
 package com.spring.blog.config;
 
 import com.spring.blog.config.jwt.TokenProvider;
+import com.spring.blog.config.oauth.OAuth2AuthorizationRequestBasedOnCookieRepository;
+import com.spring.blog.config.oauth.OAuth2UserCustomService;
+import com.spring.blog.config.oauth.Oauth2SuccessHandler;
+import com.spring.blog.repository.RefreshTokenRepository;
 import com.spring.blog.service.UserService;
+import com.spring.blog.service.UsersService;
 import jakarta.servlet.DispatcherType;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,18 +24,30 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 
 @Configuration // 설정 클래스 상위에 붙이는 어노테이션.
+@RequiredArgsConstructor
 public class BasicSecurityConfig { // 베이직 방식 인증을 사용하도록 설정하는 파일
 
     // 등록할 시큐리티 서비스 멤버변수로 작성하기
     private final UserDetailsService userService;
     private final TokenProvider tokenProvider; // final 을 붙이는 이유는 해당 객체들을 변경할 이유가 없기때문에 불변성 보장
 
-    @Autowired
-    public BasicSecurityConfig(UserDetailsService userService,
-                               TokenProvider tokenProvider){
-        this.userService = userService;
-        this.tokenProvider = tokenProvider;
-    }
+    // Oauth2.0을 활용하기 위한 객체들 추가하기
+    private final OAuth2UserCustomService oAuth2UserCustomService;
+
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    // UsersService를 OAuth2SuccessHandler가 요구하므로 빈 추가
+    private final UsersService usersService;
+
+
+
+    // 생성자 주입은 @RequiredArgsConstructor 어노테이션으로 대체
+    //@Autowired
+    //public BasicSecurityConfig(UserDetailsService userService,
+    //                           TokenProvider tokenProvider){
+    //    this.userService = userService;
+    //    this.tokenProvider = tokenProvider;
+    //}
 
     // 정적 파일이나 .jsp 파일 등 스프링 시큐리티가 기본적으로 적용되지 않을 영역 설정하기.
     @Bean // @Configuration 어노테이션 붙은 클래스 내부 메서드가 리턴하는 자료는 자동으로 빈에 등록됩니다.
@@ -74,6 +92,19 @@ public class BasicSecurityConfig { // 베이직 방식 인증을 사용하도록
                     csrfConfig
                             .disable();
                 })
+
+                // Oauth2.0에 관련된 형식으로 설정 추가
+                .oauth2Login(oauth2Config -> {
+                    oauth2Config.loginPage("/login") // 로그인에 성공했을때 넘어가는 페이지
+                    .authorizationEndpoint(endpointConfig -> endpointConfig
+                    .authorizationRequestRepository(oAuth2AuthorizationRequestBasedOnCookieRepository())) // 하단에 추가예정
+                            .successHandler(oAuth2SuccessHandler()) // 하단에 메서드 추가예정
+                            .userInfoEndpoint( userInfoConfig -> userInfoConfig
+                                    .userService(oAuth2UserCustomService));
+                })
+
+
+
                 // Before시점(Request를 서버가 처리하기 직전 시점)에 해당 필터를 사용해 로그인을 검증하도록 설정
                 .addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
                 .build();
@@ -122,6 +153,19 @@ public class BasicSecurityConfig { // 베이직 방식 인증을 사용하도록
     @Bean
     public TokenAuthenticationFilter tokenAuthenticationFilter(){
         return new TokenAuthenticationFilter(tokenProvider);// 필터는 생성자에서 토큰제공자(TokenProvider 클래스)를 요구합니다.
+    }
+
+    // Oauth2.0 활용에 필요한 빈 정의
+    @Bean
+    public Oauth2SuccessHandler oAuth2SuccessHandler() {
+        return new Oauth2SuccessHandler(tokenProvider,
+                                        refreshTokenRepository,
+                                        oAuth2AuthorizationRequestBasedOnCookieRepository(),
+                                        usersService);
+    }
+
+    @Bean public OAuth2AuthorizationRequestBasedOnCookieRepository oAuth2AuthorizationRequestBasedOnCookieRepository() {
+            return new OAuth2AuthorizationRequestBasedOnCookieRepository();
     }
 
 
